@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Survey Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--glass:rgba(255,255,255,.24);--line:rgba(255,255,255,.45);--ink:#0b1020;--ink2:rgba(11,16,32,.6)}
+*{box-sizing:border-box;margin:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",Roboto,sans-serif;color:var(--ink);background:#f3eefc;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:linear-gradient(160deg,#fdf2f8,#eef2ff 50%,#ecfeff)}
+.bg i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.7;animation:float 18s ease-in-out infinite alternate}
+.bg i:nth-child(1){width:55vmax;height:55vmax;background:#ff5fa2;left:-15vmax;top:-15vmax}
+.bg i:nth-child(2){width:45vmax;height:45vmax;background:#ffb627;right:-12vmax;top:10vh;animation-delay:-4s}
+.bg i:nth-child(3){width:50vmax;height:50vmax;background:#5b8cff;left:10vw;bottom:-20vmax;animation-delay:-8s}
+.bg i:nth-child(4){width:35vmax;height:35vmax;background:#2ee6b6;right:5vw;bottom:-5vmax;animation-delay:-12s}
+@keyframes float{to{transform:translate(6vw,-5vh) scale(1.12)}}
+main{max-width:1100px;margin:0 auto;padding:28px 16px 60px}
+.card{background:var(--glass);border:1px solid var(--line);border-radius:26px;padding:22px;backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);box-shadow:0 10px 40px rgba(20,20,60,.12),inset 0 1px 0 rgba(255,255,255,.6)}
+.top{display:grid;grid-template-columns:1fr auto;gap:16px;margin-bottom:16px}
+h1{font-size:clamp(24px,5vw,34px);font-weight:700;letter-spacing:-.025em}
+.live{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink2);margin-bottom:6px}
+.live b{width:8px;height:8px;border-radius:50%;background:#34c759;box-shadow:0 0 0 0 rgba(52,199,89,.6);animation:pulse 1.8s infinite}
+.live.off b{background:#ff9500;animation:none}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(52,199,89,0)}100%{box-shadow:0 0 0 0 rgba(52,199,89,0)}}
+.stats{display:flex;gap:28px;margin-top:14px;flex-wrap:wrap}
+.stat .n{font-size:44px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.stat .l{font-size:13px;color:var(--ink2);margin-top:4px}
+.btns{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.btns button,.btns a{padding:10px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.6);background:rgba(255,255,255,.55);font:inherit;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;text-decoration:none}
+.qr{text-align:center}
+#qr{background:#fff;padding:10px;border-radius:16px;display:inline-block}
+#qr img,#qr canvas{display:block;width:150px;height:150px}
+.qr p{font-size:12px;color:var(--ink2);margin-top:8px;word-break:break-all;max-width:170px}
+.qr:fullscreen{display:grid;place-content:center;background:#fff}
+.qr:fullscreen #qr img,.qr:fullscreen #qr canvas{width:70vmin;height:70vmin}
+.qr:fullscreen p{max-width:none;font-size:22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:16px}
+.q{font-size:15px;font-weight:600;margin-bottom:14px;line-height:1.35}
+.q span{color:var(--ink2);margin-right:4px}
+.bar{margin-bottom:10px}
+.bar .lab{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;margin-bottom:5px}
+.bar .lab em{font-style:normal;color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.track{height:12px;border-radius:8px;background:rgba(255,255,255,.5);overflow:hidden}
+.fill{height:100%;border-radius:8px;width:0;transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.avg{font-size:13px;color:var(--ink2);margin-top:6px}
+.others{margin-top:14px;display:flex;flex-direction:column;gap:6px;max-height:220px;overflow:auto}
+.others div{font-size:13.5px;background:rgba(255,255,255,.55);padding:9px 12px;border-radius:12px}
+.gate{max-width:420px;margin:15vh auto;text-align:center}
+.gate input{width:100%;padding:13px;border-radius:14px;border:1px solid rgba(255,255,255,.6);background:rgba(255,255,255,.65);font:inherit;font-size:16px;margin:14px 0 10px}
+.gate button{width:100%;padding:13px;border:0;border-radius:14px;background:var(--ink);color:#fff;font:inherit;font-weight:600;font-size:16px}
+@media (max-width:640px){.top{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bg"><i></i><i></i><i></i><i></i></div>
+<main id="app"></main>
+<script>
+const SB="https://gvnvksqcgzdqfmumfjtq.supabase.co",KEY="sb_publishable_GdtHBgeXza3F3t3aAv42Iw_j85q9KQ2";
+const FORM_URL=(()=>{try{const u=new URL("./",location.href);if(/^https?:$/.test(u.protocol))return u.href}catch(_){}return"https://bsoricelli32.github.io/art-survey/"})();
+const COLORS=["#ff375f","#ff9f0a","#ffd60a","#30d158","#0a84ff","#bf5af2"];
+const Q=[
+{id:"q1",t:"Interest in community art forms",o:["Not at all interested","Slightly interested","Moderately interested","Very interested","Extremely interested"],scale:1},
+{id:"q2",t:"Are you an artist of any form?",o:["Yes","No"]},
+{id:"q3",t:"Attendance at community art events / displays",o:["Never","Rarely","Sometimes","Often","Very often"],scale:1},
+{id:"q4",t:"Support for public funds for community art",o:["Strongly oppose","Somewhat oppose","Neither support nor oppose","Somewhat support","Strongly support"],scale:1},
+{id:"q5",t:"Biggest concern about expanding programs",o:["Cost to taxpayers","Maintenance and upkeep","Disagreement over which art to include","Whether people would use or enjoy the programs","I would have no concerns","Other"]}];
+const app=document.getElementById("app");
+let k=location.hash.slice(1)||sessGet(),rows=[],timer;
+function sessGet(){try{return sessionStorage.getItem("ak")||""}catch(_){return""}}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+async function load(){
+ const r=await fetch(SB+"/rest/v1/rpc/art_survey_results",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify({k})});
+ if(!r.ok)throw new Error(r.status);return r.json()}
+function gate(msg){app.innerHTML=`<div class="card gate"><h1>Dashboard</h1><p style="color:var(--ink2);margin-top:6px">${msg||"Enter your access key."}</p><input id="key" placeholder="Access key" autocomplete="off"><button id="ok">Open</button></div>`;
+ document.getElementById("ok").onclick=()=>{k=document.getElementById("key").value.trim();start()}}
+async function start(){
+ try{rows=await load()}catch(_){return gate("Couldn't connect. Try again.")}
+ try{sessionStorage.setItem("ak",k)}catch(_){}
+ if(location.hash)history.replaceState(null,"",location.pathname);
+ shell();render();
+ // Empty result could mean wrong key OR no responses yet; key only matters once data exists
+ clearInterval(timer);timer=setInterval(tick,3000)}
+async function tick(){const live=document.getElementById("live");try{const r=await load();live.className="live";live.lastChild.textContent=" Live";if(r.length!==rows.length){rows=r;render()}}catch(_){live.className="live off";live.lastChild.textContent=" Reconnecting…"}}
+function shell(){
+ app.innerHTML=`<div class="top"><section class="card"><div class="live" id="live"><b></b> Live</div><h1>Community Art Audience Survey</h1>
+ <div class="stats"><div class="stat"><div class="n" id="total">0</div><div class="l">Responses</div></div><div class="stat"><div class="n" id="last" style="font-size:22px;padding-top:14px">–</div><div class="l">Latest</div></div></div>
+ <div class="btns"><button id="csv">Download CSV</button><a href="${FORM_URL}" target="_blank" rel="noopener">Open form</a><button id="full">Fullscreen QR</button></div></section>
+ <section class="card qr"><div id="qr"></div><p>${esc(FORM_URL)}</p></section></div><div class="grid" id="grid"></div>`;
+ new QRCode(document.getElementById("qr"),{text:FORM_URL,width:300,height:300,correctLevel:QRCode.CorrectLevel.M});
+ document.getElementById("csv").onclick=csv;
+ document.getElementById("full").onclick=()=>{const q=document.querySelector(".qr");q.requestFullscreen?.()};
+ document.getElementById("grid").innerHTML=Q.map((q,i)=>`<section class="card"><p class="q"><span>${i+1}.</span>${q.t}</p><div id="b_${q.id}">${q.o.map((o,j)=>`<div class="bar"><div class="lab"><span>${o}</span><em></em></div><div class="track"><div class="fill" style="background:${q.o.length===2?(j?"#8e8e93":"#0a84ff"):COLORS[j]}"></div></div></div>`).join("")}</div>${q.scale?'<p class="avg"></p>':""}${q.id==="q5"?'<div class="others" id="others"></div>':""}</section>`).join("")}
+function val(q,r){if(q.id==="q2")return r.q2?0:1;if(q.id==="q5")return q.o.indexOf(r.q5);return r[q.id]-1}
+function render(){
+ const n=rows.length;document.getElementById("total").textContent=n;
+ document.getElementById("last").textContent=n?new Date(rows[n-1].created_at).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}):"–";
+ for(const q of Q){const c=q.o.map(()=>0);rows.forEach(r=>{const v=val(q,r);if(v>=0)c[v]++});
+  const box=document.getElementById("b_"+q.id);
+  box.querySelectorAll(".bar").forEach((b,j)=>{const p=n?Math.round(c[j]/n*100):0;b.querySelector("em").textContent=`${c[j]} · ${p}%`;b.querySelector(".fill").style.width=p+"%"});
+  if(q.scale){const a=n?(rows.reduce((s,r)=>s+r[q.id],0)/n).toFixed(2):"–";box.nextElementSibling.textContent=`Average: ${a} / 5`}}
+ const o=rows.filter(r=>r.q5_other).reverse();
+ document.getElementById("others").innerHTML=o.length?o.map(r=>`<div>${esc(r.q5_other)}</div>`).join(""):""}
+function csv(){
+ const h=["submitted_at","interest","is_artist","attendance","funding_support","biggest_concern","other_text"];
+ const q=s=>`"${String(s??"").replace(/"/g,'""')}"`;
+ const lines=[h.join(",")].concat(rows.map(r=>[r.created_at,Q[0].o[r.q1-1],r.q2?"Yes":"No",Q[2].o[r.q3-1],Q[3].o[r.q4-1],r.q5,r.q5_other].map(q).join(",")));
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([lines.join("\n")],{type:"text/csv"}));a.download="art-survey-results.csv";a.click()}
+k?start():gate();
+</script>
+</body>
+</html>

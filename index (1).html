@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Community Art Survey</title>
+<style>
+:root{--glass:rgba(255,255,255,.22);--glass2:rgba(255,255,255,.38);--line:rgba(255,255,255,.45);--ink:#0b1020;--ink2:rgba(11,16,32,.62);--accent:#0a84ff}
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Inter","Segoe UI",Roboto,sans-serif;color:var(--ink);background:#f3eefc;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:linear-gradient(160deg,#fdf2f8,#eef2ff 50%,#ecfeff)}
+.bg i{position:absolute;border-radius:50%;filter:blur(70px);opacity:.75;animation:float 18s ease-in-out infinite alternate}
+.bg i:nth-child(1){width:55vmax;height:55vmax;background:#ff5fa2;left:-15vmax;top:-15vmax}
+.bg i:nth-child(2){width:45vmax;height:45vmax;background:#ffb627;right:-12vmax;top:10vh;animation-delay:-4s}
+.bg i:nth-child(3){width:50vmax;height:50vmax;background:#5b8cff;left:10vw;bottom:-20vmax;animation-delay:-8s}
+.bg i:nth-child(4){width:35vmax;height:35vmax;background:#2ee6b6;right:5vw;bottom:-5vmax;animation-delay:-12s}
+.bg i:nth-child(5){width:30vmax;height:30vmax;background:#a855f7;left:40vw;top:25vh;animation-delay:-6s}
+@keyframes float{to{transform:translate(6vw,-5vh) scale(1.12)}}
+@media (prefers-reduced-motion:reduce){.bg i{animation:none}}
+main{max-width:640px;margin:0 auto;padding:max(28px,env(safe-area-inset-top)) 16px 60px}
+.card{background:var(--glass);border:1px solid var(--line);border-radius:28px;padding:24px;backdrop-filter:blur(28px) saturate(170%);-webkit-backdrop-filter:blur(28px) saturate(170%);box-shadow:0 10px 40px rgba(20,20,60,.12),inset 0 1px 0 rgba(255,255,255,.6);margin-bottom:16px}
+header.card{text-align:center;padding:32px 24px}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+h1{font-size:clamp(28px,7vw,38px);font-weight:700;letter-spacing:-.025em;margin:8px 0 6px}
+.sub{color:var(--ink2);font-size:15px}
+.q{font-size:17px;font-weight:600;letter-spacing:-.01em;margin-bottom:14px;line-height:1.35}
+.q span{color:var(--ink2);font-weight:500;margin-right:6px}
+.opts{display:flex;flex-direction:column;gap:8px}
+label.opt{display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:16px;background:var(--glass2);border:1px solid rgba(255,255,255,.5);cursor:pointer;font-size:16px;transition:background .2s,transform .1s,box-shadow .2s}
+label.opt:active{transform:scale(.985)}
+label.opt input{appearance:none;width:22px;height:22px;border-radius:50%;border:2px solid rgba(11,16,32,.25);flex:none;display:grid;place-items:center;transition:.2s}
+label.opt input:checked{border-color:var(--accent);background:var(--accent);box-shadow:inset 0 0 0 4px #fff}
+label.opt:has(input:checked){background:rgba(255,255,255,.75);box-shadow:0 4px 18px rgba(10,132,255,.18)}
+label.opt input:focus-visible{outline:3px solid rgba(10,132,255,.4);outline-offset:2px}
+.row2{flex-direction:row}.row2 label{flex:1}
+textarea{width:100%;margin-top:8px;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.6);background:rgba(255,255,255,.6);font:inherit;font-size:16px;resize:vertical;min-height:70px;display:none}
+textarea.show{display:block}
+button{width:100%;padding:17px;border:0;border-radius:18px;background:var(--ink);color:#fff;font:inherit;font-size:17px;font-weight:600;cursor:pointer;box-shadow:0 10px 30px rgba(11,16,32,.25);transition:transform .1s,opacity .2s}
+button:active{transform:scale(.98)}button:disabled{opacity:.5}
+.err{color:#d70015;font-size:14px;text-align:center;margin-top:10px;min-height:1em}
+.missing{box-shadow:0 0 0 2px rgba(215,0,21,.5),0 10px 40px rgba(20,20,60,.12)}
+.done{text-align:center;padding:48px 24px;display:none}
+.done .check{width:72px;height:72px;border-radius:50%;background:#34c759;color:#fff;display:grid;place-items:center;font-size:38px;margin:0 auto 16px;box-shadow:0 10px 30px rgba(52,199,89,.4)}
+</style>
+</head>
+<body>
+<div class="bg"><i></i><i></i><i></i><i></i><i></i></div>
+<main>
+<header class="card">
+<div class="eyebrow">Anonymous · 1 minute</div>
+<h1>Community Art Audience Survey</h1>
+<p class="sub">5 quick questions. No names collected.</p>
+</header>
+<form id="f" novalidate></form>
+<section class="card done" id="done"><div class="check">✓</div><h1>Thank you!</h1><p class="sub">Your response was recorded.</p></section>
+</main>
+<script>
+const SB="https://gvnvksqcgzdqfmumfjtq.supabase.co",KEY="sb_publishable_GdtHBgeXza3F3t3aAv42Iw_j85q9KQ2";
+const Q=[
+{id:"q1",t:"How interested are you in murals, sculptures, music, or other community art forms?",o:["Not at all interested","Slightly interested","Moderately interested","Very interested","Extremely interested"]},
+{id:"q2",t:"Are you an artist of any form?",o:["Yes","No"],row:1},
+{id:"q3",t:"How often do you attend community art events or visit public art displays, such as murals or sculptures?",o:["Never","Rarely","Sometimes","Often","Very often"]},
+{id:"q4",t:"To what extent would you support or oppose your local government using public funds for community art?",o:["Strongly oppose","Somewhat oppose","Neither support nor oppose","Somewhat support","Strongly support"]},
+{id:"q5",t:"What would be your biggest concern about expanding community art programs?",o:["Cost to taxpayers","Maintenance and upkeep","Disagreement over which art to include","Whether people would use or enjoy the programs","I would have no concerns","Other"]}];
+const f=document.getElementById("f");
+f.innerHTML=Q.map((q,i)=>`<section class="card" id="c_${q.id}"><p class="q"><span>${i+1}.</span>${q.t}</p><div class="opts${q.row?" row2":""}">${q.o.map((o,j)=>`<label class="opt"><input type="radio" name="${q.id}" value="${j}">${o==="Other"?"Other:":o}</label>`).join("")}</div>${q.id==="q5"?'<textarea id="other" maxlength="300" placeholder="Describe your concern"></textarea>':""}</section>`).join("")+`<button type="submit" id="go">Submit</button><p class="err" id="err"></p>`;
+const other=document.getElementById("other");
+f.addEventListener("change",e=>{if(e.target.name==="q5")other.classList.toggle("show",e.target.value==="5");document.getElementById("c_"+e.target.name)?.classList.remove("missing")});
+if(localStorageGet())showDone();
+f.addEventListener("submit",async e=>{
+ e.preventDefault();const err=document.getElementById("err");err.textContent="";
+ const v={};let miss=null;
+ for(const q of Q){const c=f.querySelector(`input[name=${q.id}]:checked`);if(!c){document.getElementById("c_"+q.id).classList.add("missing");miss??=q.id}else v[q.id]=+c.value}
+ if(miss){document.getElementById("c_"+miss).scrollIntoView({behavior:"smooth",block:"center"});err.textContent="Please answer every question.";return}
+ const isOther=v.q5===5;
+ if(isOther&&!other.value.trim()){err.textContent="Please describe your concern for \"Other\".";other.focus();return}
+ const body={q1:v.q1+1,q2:v.q2===0,q3:v.q3+1,q4:v.q4+1,q5:Q[4].o[v.q5],q5_other:isOther?other.value.trim():null};
+ const b=document.getElementById("go");b.disabled=true;b.textContent="Submitting…";
+ try{const r=await fetch(SB+"/rest/v1/art_survey",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(body)});
+  if(!r.ok)throw 0;try{localStorage.setItem("artsurvey_done","1")}catch(_){}showDone()}
+ catch(_){err.textContent="Couldn't submit. Check your connection and try again.";b.disabled=false;b.textContent="Submit"}
+});
+function localStorageGet(){try{return localStorage.getItem("artsurvey_done")}catch(_){return null}}
+function showDone(){f.style.display="none";document.querySelector("header").style.display="none";document.getElementById("done").style.display="block";scrollTo(0,0)}
+</script>
+</body>
+</html>
